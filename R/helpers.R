@@ -17,3 +17,26 @@ api_key_checker <- function(x){
     FALSE
   }
 }
+
+require(httr2)
+require(jsonlite)
+
+get_sensors_req <- function(qry){
+  error_body <- function(resp) {
+    resp_body_json(resp)$description
+  }
+
+  req <- httr2::request("https://api.purpleair.com/v1/sensors") |>
+    httr2::req_url_query(!!!qry, .multi = "comma") |>
+    httr2::req_error(body = error_body)
+
+  resp <- req_perform(req) |>
+    resp_body_raw() |>
+    rawToChar() |>
+    parse_json(simplifyVector = T)
+
+  resp_df <- as.data.frame(resp[["data"]])
+  names(resp_df) <- resp[["fields"]]
+
+  return(resp_df)
+}

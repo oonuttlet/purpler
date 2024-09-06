@@ -22,11 +22,13 @@ get_sensors_data <- function(aoi = NULL, fields, api_key = NULL, ...){
   if (is.null(aoi)){
     qry <- list(fields = append(fields, values = c("latitude", "longitude")),
                 api_key = api_key)
+    crs <- 4269
   }
   else if (!inherits(aoi, "sf")){
     stop("'aoi' must be an sf object.")
   }
   else {
+    crs <- st_crs(aoi)
     aoi_bb <- st_bbox(aoi, crs = 4269)
     qry <- list(fields = append(fields, values = c("latitude", "longitude")),
                 api_key = api_key,
@@ -36,24 +38,30 @@ get_sensors_data <- function(aoi = NULL, fields, api_key = NULL, ...){
                 selng = aoi_bb["xmax"])
   }
 
-  error_body <- function(resp) {
-    resp_body_json(resp)$description
+  resp_df <- get_sensors_req(qry)
+
+  resp_df$latitude <- as.numeric(resp_df$latitude)
+  resp_df$longitude <- as.numeric(resp_df$longitude)
+
+  resp_sf <- st_as_sf(resp_df[!is.na(resp_df$latitude)|!is.na(resp_df$longitude),], coords = c("longitude", "latitude"), crs = 4269) |>
+    st_transform(crs)
+  if (length(resp_df[is.na(resp_df$latitude)|is.na(resp_df$longitude),] > 0)){
+    resp_sf <- resp_sf |>
+      rbind({ng <- resp_df[is.na(resp_df$latitude)|is.na(resp_df$longitude),]
+             ng$geometry = st_sfc(st_point(), crs = 4269)
+             ng <- st_as_sf(ng) |>
+                st_transform(crs)
+             ng <- subset(ng, select = -c(latitude, longitude)) |>
+                st_as_sf()
+             ng}) |>
+      st_as_sf()
   }
 
-  req <- request("https://api.purpleair.com/v1/sensors") |>
-    req_url_query(!!!qry, .multi = "comma") |>
-    req_error(body = error_body)
+  if (!is.null(aoi)){
+    resp_sf <- resp_sf[aoi,]
+  }
 
-  resp <- req_perform(req) |>
-    resp_body_raw() |>
-    rawToChar() |>
-    parse_json(simplifyVector = T)
-
-  resp_df <- as.data.frame(resp[["data"]])
-  names(resp_df) <- resp[["fields"]]
-
-  resp_sf <- st_as_sf(resp_df, coords = c("longitude", "latitude"), crs = 4269) |>
-    st_transform(st_crs(aoi))
-
-  return(resp_sf[aoi,])
+  return(resp_sf)
 }
+
+
