@@ -6,7 +6,7 @@ require(sf)
 #'
 #' @param aoi Optional; an sf object defining an area of interest
 #' @param fields A character vector of fields specified in the [PurpleAir API documentation](https://api.purpleair.com/#api-sensors-get-sensors-data)
-#' @param api_key If not set with purpleair_api_key()
+#' @param api_key If not previously set with purpleair_api_key()
 #' @param ...
 #'
 #' @return A POINT sf object
