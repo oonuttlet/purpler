@@ -1,7 +1,5 @@
-purpleair_api_key <- function(..., overwrite = FALSE, install = FALSE){
-  args <- list(...)
-  if (!is.null(args$api_key)){
-    api_key = args$api_key
+purpleair_api_key <- function(api_key = NULL, overwrite = FALSE, install = FALSE){
+  if (!is.null(api_key)){
     if (api_key_checker(api_key) == T){
       if (install) {
         home <- Sys.getenv("HOME")
