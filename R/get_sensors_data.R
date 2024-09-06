@@ -7,7 +7,7 @@ get_sensors_data <- function(aoi = NULL, fields, api_key = Sys.getenv("PURPLEAIR
     qry <- list(fields = append(fields, values = c("latitude", "longitude")),
                 api_key = api_key)
   }
-  else if (!"sf" %in% class(aoi)){
+  else if (!inherits(aoi, sf)){
     stop("'aoi' must be an sf object.")
   }
   else {
