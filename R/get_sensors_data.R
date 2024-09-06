@@ -15,12 +15,16 @@ require(sf)
 #' @examples
 #' nc <- sf::st_read(system.file("shape/nc.shp", package="sf"))
 #' get_sensors_data(nc, c("name", "pm2.5", "humidity"))
-get_sensors_data <- function(aoi = NULL, fields, api_key = NULL, ...){
+get_sensors_data <- function(aoi = NULL,
+                             fields,
+                             api_key = NULL,
+                             ...){
   if (is.null(api_key)){
     api_key = Sys.getenv("PURPLEAIR_API_KEY")
   }
   if (is.null(aoi)){
-    qry <- list(fields = append(fields, values = c("latitude", "longitude")),
+    qry <- list(fields = append(fields,
+                                values = c("latitude", "longitude")),
                 api_key = api_key)
     crs <- 4269
   }
@@ -43,15 +47,19 @@ get_sensors_data <- function(aoi = NULL, fields, api_key = NULL, ...){
   resp_df$latitude <- as.numeric(resp_df$latitude)
   resp_df$longitude <- as.numeric(resp_df$longitude)
 
-  resp_sf <- st_as_sf(resp_df[!is.na(resp_df$latitude)|!is.na(resp_df$longitude),], coords = c("longitude", "latitude"), crs = 4269) |>
+  resp_sf <- st_as_sf(resp_df[!is.na(resp_df$latitude)|!is.na(resp_df$longitude),],
+                      coords = c("longitude", "latitude"),
+                      crs = 4269) |>
     st_transform(crs)
   if (length(resp_df[is.na(resp_df$latitude)|is.na(resp_df$longitude),] > 0)){
     resp_sf <- resp_sf |>
       rbind({ng <- resp_df[is.na(resp_df$latitude)|is.na(resp_df$longitude),]
-             ng$geometry = st_sfc(st_point(), crs = 4269)
+             ng$geometry = st_sfc(st_point(),
+                                  crs = 4269)
              ng <- st_as_sf(ng) |>
                 st_transform(crs)
-             ng <- subset(ng, select = -c(latitude, longitude)) |>
+             ng <- subset(ng,
+                          select = -c(latitude, longitude)) |>
                 st_as_sf()
              ng}) |>
       st_as_sf()
