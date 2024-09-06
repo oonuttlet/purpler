@@ -1,11 +1,12 @@
 require(httr2)
 require(jsonlite)
 
-#' Retrieves a list with the latest data of multiple sensors matching the provided parameters.
+#' Retrieves current sensor information for a single sensor (defined by 'sensor_index').
 #'
-#' @param aoi Optional; an sf object defining an area of interest
-#' @param fields A character vector of fields specified in the [PurpleAir API documentation](https://api.purpleair.com/#api-sensors-get-sensors-data)
+#' @param sensor_index A single numeric value corresponding to a specific PurpleAir sensor
+#' @param fields Optional; a character vector of fields specified in the [PurpleAir API documentation](https://api.purpleair.com/#api-sensors-get-sensors-data). If left blank, will default to all fields specified in the documentation
 #' @param api_key If not set with purpleair_api_key()
+#' @param geometry Optional (default FALSE); if TRUE, an sf object will be returned.
 #' @param ...
 #'
 #' @return A POINT sf object
@@ -14,38 +15,38 @@ require(jsonlite)
 #' @examples
 #' nc <- sf::st_read(system.file("shape/nc.shp", package="sf"))
 #' get_sensors_data(nc, c("name", "pm2.5", "humidity"))
-get_sensor_data <- function(sensor_index, fields = NULL, api_key = NULL, ...){
-  if (is.null(api_key)){
-    api_key = Sys.getenv("PURPLEAIR_API_KEY")
-  }
-  else if (is.null(fields)){
-    qry <- list(sensor_index = sensor_index,
-                api_key = api_key)
+get_sensor_data <- function(sensor_index, fields = NULL, api_key = NULL, geometry = FALSE,...){
+  if (suppressWarnings(!is.na(as.numeric(sensor_index)))){
+    if (is.null(api_key)){
+      api_key = Sys.getenv("PURPLEAIR_API_KEY")
+    }
+    if (is.null(fields)){
+      if (geometry) {
+        fields = c("latitude", "longitude")
+      }
+      qry <- list(sensor_index = sensor_index,
+                  api_key = api_key)
+    }
+    else {
+      if (geometry) {
+        fields = append(fields, values = c("latitude", "longitude"))
+      }
+      qry <- list(sensor_index = sensor_index,
+                  fields = fields,
+                  api_key = api_key)
+    }
+
+    resp_df <- get_purple_req(qry, scope = "sensor", sensor_id = sensor_index)
+
+  if (geometry == FALSE){
+    return(resp_df)
   }
   else {
-    qry <- list(sensor_index = sensor_index,
-                fields = fields,
-                api_key = api_key)
+    resp_sf <- resp_to_sf(resp_df, 4269)
+    return(resp_sf)
   }
-
-  error_body <- function(resp) {
-    resp_body_json(resp)$description
   }
-
-  req <- request("https://api.purpleair.com/v1/sensors") |>
-    req_url_query(!!!qry, .multi = "comma") |>
-    req_error(body = error_body)
-
-  resp <- req_perform(req) |>
-    resp_body_raw() |>
-    rawToChar() |>
-    parse_json(simplifyVector = T)
-
-  resp_df <- as.data.frame(resp[["data"]])
-  names(resp_df) <- resp[["fields"]]
-
-  resp_sf <- st_as_sf(resp_df, coords = c("longitude", "latitude"), crs = 4269) |>
-    st_transform(st_crs(aoi))
-
-  return(resp_sf[aoi,])
+  else {
+    stop("'sensor_index' must be numeric")
+  }
 }

@@ -42,28 +42,9 @@ get_sensors_data <- function(aoi = NULL,
                 selng = aoi_bb["xmax"])
   }
 
-  resp_df <- get_sensors_req(qry)
+  resp_df <- get_purple_req(qry, "sensors")
 
-  resp_df$latitude <- as.numeric(resp_df$latitude)
-  resp_df$longitude <- as.numeric(resp_df$longitude)
-
-  resp_sf <- st_as_sf(resp_df[!is.na(resp_df$latitude)|!is.na(resp_df$longitude),],
-                      coords = c("longitude", "latitude"),
-                      crs = 4269) |>
-    st_transform(crs)
-  if (length(resp_df[is.na(resp_df$latitude)|is.na(resp_df$longitude),] > 0)){
-    resp_sf <- resp_sf |>
-      rbind({ng <- resp_df[is.na(resp_df$latitude)|is.na(resp_df$longitude),]
-             ng$geometry = st_sfc(st_point(),
-                                  crs = 4269)
-             ng <- st_as_sf(ng) |>
-                st_transform(crs)
-             ng <- subset(ng,
-                          select = -c(latitude, longitude)) |>
-                st_as_sf()
-             ng}) |>
-      st_as_sf()
-  }
+  resp_sf <- resp_to_sf(resp_df, crs = crs)
 
   if (!is.null(aoi)){
     resp_sf <- resp_sf[aoi,]
@@ -71,5 +52,3 @@ get_sensors_data <- function(aoi = NULL,
 
   return(resp_sf)
 }
-
-
