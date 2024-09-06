@@ -13,7 +13,7 @@ require(sf)
 #' @export
 #'
 #' @examples
-#' nc <- st_read(system.file("shape/nc.shp", package="sf"))
+#' nc <- sf::st_read(system.file("shape/nc.shp", package="sf"))
 #' get_sensors_data(nc, c("name", "pm2.5", "humidity"))
 get_sensors_data <- function(aoi = NULL, fields, api_key = Sys.getenv("PURPLEAIR_API_KEY"), ...){
   if (is.null(aoi)){
