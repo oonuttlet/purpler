@@ -4,9 +4,11 @@ Version: 0.0.0.9000
 Authors@R: 
     person("Harrison", "DeFord", , "hdeford1@umbc.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0001-5978-0422"))
-Description: An interface for grabbing information from the PurpleAir API.
+Description: An interface to GET information from the PurpleAir API.
         'purpler' will return information from multiple sensors by bounding box, 
         or historical information about a single sensor.
+URL: https://github.com/oonuttlet/purpler
+BugReports: https://github.com/oonuttlet/purpler/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
