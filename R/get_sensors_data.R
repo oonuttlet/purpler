@@ -18,7 +18,7 @@ require(sf)
 get_sensors_data <- function(aoi = NULL,
                              fields,
                              api_key = NULL,
-                             ...){
+                             ...){ #TODO: other api options
   if (is.null(api_key)){
     api_key = Sys.getenv("PURPLEAIR_API_KEY")
   }

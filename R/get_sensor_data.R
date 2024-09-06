@@ -15,7 +15,11 @@ require(jsonlite)
 #' @examples
 #' nc <- sf::st_read(system.file("shape/nc.shp", package="sf"))
 #' get_sensors_data(nc, c("name", "pm2.5", "humidity"))
-get_sensor_data <- function(sensor_index, fields = NULL, api_key = NULL, geometry = FALSE,...){
+get_sensor_data <- function(sensor_index,
+                            fields = NULL,
+                            api_key = NULL,
+                            geometry = FALSE,
+                            ...){
   if (suppressWarnings(!is.na(as.numeric(sensor_index)))){
     if (is.null(api_key)){
       api_key = Sys.getenv("PURPLEAIR_API_KEY")

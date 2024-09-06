@@ -4,19 +4,14 @@
 \alias{get_sensors_data}
 \title{Retrieves a list with the latest data of multiple sensors matching the provided parameters.}
 \usage{
-get_sensors_data(
-  aoi = NULL,
-  fields,
-  api_key = Sys.getenv("PURPLEAIR_API_KEY"),
-  ...
-)
+get_sensors_data(aoi = NULL, fields, api_key = NULL, ...)
 }
 \arguments{
 \item{aoi}{Optional; an sf object defining an area of interest}
 
 \item{fields}{A character vector of fields specified in the \href{https://api.purpleair.com/#api-sensors-get-sensors-data}{PurpleAir API documentation}}
 
-\item{api_key}{If not set with purpleair_api_key()}
+\item{api_key}{If not previously set with purpleair_api_key()}
 
 \item{...}{}
 }
@@ -27,6 +22,6 @@ A POINT sf object
 Retrieves a list with the latest data of multiple sensors matching the provided parameters.
 }
 \examples{
-nc <- st_read(system.file("shape/nc.shp", package="sf"))
+nc <- sf::st_read(system.file("shape/nc.shp", package="sf"))
 get_sensors_data(nc, c("name", "pm2.5", "humidity"))
 }
