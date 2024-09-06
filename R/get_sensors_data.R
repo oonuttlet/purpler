@@ -15,7 +15,10 @@ require(sf)
 #' @examples
 #' nc <- sf::st_read(system.file("shape/nc.shp", package="sf"))
 #' get_sensors_data(nc, c("name", "pm2.5", "humidity"))
-get_sensors_data <- function(aoi = NULL, fields, api_key = Sys.getenv("PURPLEAIR_API_KEY"), ...){
+get_sensors_data <- function(aoi = NULL, fields, api_key = NULL, ...){
+  if (is.null(api_key)){
+    api_key = Sys.getenv("PURPLEAIR_API_KEY")
+  }
   if (is.null(aoi)){
     qry <- list(fields = append(fields, values = c("latitude", "longitude")),
                 api_key = api_key)
