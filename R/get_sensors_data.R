@@ -33,7 +33,10 @@ get_sensors_data <- function(aoi = NULL,
   }
   else {
     crs <- st_crs(aoi)
-    aoi_bb <- st_bbox(aoi, crs = 4269)
+    aoi_bb <- st_bbox(aoi) |>
+              st_as_sfc() |>
+              st_transform(4269) |>
+              st_bbox()
     qry <- list(fields = append(fields, values = c("latitude", "longitude")),
                 api_key = api_key,
                 nwlat = aoi_bb["ymax"],
