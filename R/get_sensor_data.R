@@ -17,40 +17,60 @@ require(jsonlite)
 #' get_sensors_data(nc, c("name", "pm2.5", "humidity"))
 get_sensor_data <- function(sensor_index,
                             fields = NULL,
-                            api_key = NULL,
+                            start_date = NULL,
+                            end_date = NULL,
+                            average = NULL,
                             geometry = FALSE,
+                            api_key = NULL,
                             ...){
-  if (suppressWarnings(!is.na(as.numeric(sensor_index)))){
-    if (is.null(api_key)){
-      api_key = Sys.getenv("PURPLEAIR_API_KEY")
-    }
-    if (is.null(fields)){
-      if (geometry) {
-        fields = c("latitude", "longitude")
+  stopifnot("'sensor_index' must be numeric" = suppressWarnings(!is.na(as.numeric(sensor_index))),
+            "'average' must be numeric" = suppressWarnings(!is.na(as.numeric(average))),
+            "'start_date' and 'end_date' must be valid ISO8601 strings (e.g., '2024-01-01')" =
+              grepl(pattern = r"(^\d{4}-\d{2}-\d{2}$)", x = c(start_date, end_date)))
+  if (is.null(api_key)){
+    api_key = Sys.getenv("PURPLEAIR_API_KEY")
+  }
+  if (is.null(start_date) & is.null(end_date) & is.null(average)){
+      if (is.null(fields)){
+        if (geometry) {
+          fields = c("latitude", "longitude")
+        }
+        qry <- list(sensor_index = sensor_index,
+                    api_key = api_key)
       }
-      qry <- list(sensor_index = sensor_index,
-                  api_key = api_key)
+      else {
+        if (geometry) {
+          fields = append(fields, values = c("latitude", "longitude"))
+        }
+        qry <- list(sensor_index = sensor_index,
+                    fields = fields,
+                    api_key = api_key)
+      }
+
+      resp_df <- get_purple_req(qry, scope = "sensor", sensor_id = sensor_index)
+
+    if (geometry == FALSE){
+      return(resp_df)
     }
     else {
-      if (geometry) {
-        fields = append(fields, values = c("latitude", "longitude"))
-      }
-      qry <- list(sensor_index = sensor_index,
-                  fields = fields,
-                  api_key = api_key)
+      resp_sf <- resp_to_sf(resp_df, 4269)
+      return(resp_sf)
     }
-
-    resp_df <- get_purple_req(qry, scope = "sensor", sensor_id = sensor_index)
-
-  if (geometry == FALSE){
+  }
+  else if (is.null(fields)){
+    stop("For historical data, 'fields' cannot be null")
+  }
+  else if (geometry){
+    stop("for historical data, 'geometry' cannot be TRUE")
+  }
+  else {
+    qry <- list(sensor_index = sensor_index,
+                fields = fields,
+                start_timestamp = format(as.POSIXct(start_date, tz="UTC"), format = "%Y-%m-%dT%TZ", tz = "UTC"),
+                end_timestamp = format(as.POSIXct(end_date, tz="UTC"), format = "%Y-%m-%dT%TZ", tz = "UTC"),
+                average = average,
+                api_key = api_key)
+    resp_df <- get_purple_req(qry, scope = "history", sensor_id = sensor_index)
     return(resp_df)
-  }
-  else {
-    resp_sf <- resp_to_sf(resp_df, 4269)
-    return(resp_sf)
-  }
-  }
-  else {
-    stop("'sensor_index' must be numeric")
   }
 }

@@ -60,6 +60,13 @@ get_purple_req <- function(qry, scope, sensor_id = NULL){
     names(resp_df) <- resp_names
   }
 
+  if (scope == "history") {
+    resp_df <- as.data.frame(resp[["data"]])
+    names(resp_df) <- resp[["fields"]]
+    resp_df$time_stamp <- as.POSIXct(resp_df$time_stamp, format = "%Y-%m-%dT%TZ")
+    resp_df <- resp_df[order(resp_df$time_stamp),]
+  }
+
   return(resp_df)
 }
 
