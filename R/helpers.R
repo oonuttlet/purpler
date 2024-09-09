@@ -1,6 +1,6 @@
 api_key_pattern <- "^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$"
 
-api_key_checker <- function(x){
+check_purple_api_key <- function(x){
   if (inherits(x, "character")
       & length(x) == 1
       & grepl(x = x,
