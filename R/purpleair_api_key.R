@@ -12,9 +12,10 @@ purpleair_api_key <- function(api_key = NULL, overwrite = FALSE, install = FALSE
         }
         else {
           oldenv = read.table(renv, stringsAsFactors = FALSE)
+          newenv <- data.frame(V1 = character(), V2 = character())
           if (isTRUE(overwrite) & length(grep("PURPLEAIR_API_KEY", oldenv)) > 0) {
             message("Your original .Renviron will be backed up and stored in your R HOME directory if needed.")
-            newenv <- data.frame(V1 = character())
+
             oldenv$V1 <-  oldenv[,1] |>
               strsplit("=", fixed = T)
             oldenv$V2 <- sapply(oldenv$V1, FUN = function(x) x[2])
