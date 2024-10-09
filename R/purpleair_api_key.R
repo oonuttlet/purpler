@@ -1,4 +1,7 @@
 purpleair_api_key <- function(api_key = NULL, overwrite = FALSE, install = FALSE) {
+  if (!install & overwrite){
+    cli::cli_abort("`overwrite` cannot be TRUE if `install` is FALSE.\n")
+  }
   if (is.null(api_key)) {
     print(Sys.getenv("PURPLEAIR_API_KEY"))
   }
